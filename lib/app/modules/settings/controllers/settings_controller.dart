@@ -80,6 +80,13 @@ class SettingsController extends GetxController {
             onPressed: () => Get.back(),
             child: const Text('Cancelar'),
           ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              Get.toNamed('/register');
+            },
+            child: const Text('Crear cuenta'),
+          ),
           ElevatedButton(
             onPressed: () {
               authController.login(

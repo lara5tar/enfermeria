@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 
 import '../controllers/settings_controller.dart';
 import '../../../widgets/custom_bottom_navigation_bar.dart';
+import '../../../models/user_model.dart';
+import '../../../routes/app_pages.dart';
 
 class SettingsView extends GetView<SettingsController> {
   const SettingsView({super.key});
@@ -14,27 +16,26 @@ class SettingsView extends GetView<SettingsController> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // Sección Cuenta de Usuario
+          // Sección Cuenta
           _buildSectionHeader('Cuenta'),
           Card(
             child: Obx(
-              () =>
-                  controller.authController.isLoggedIn.value
+              () => controller.authController.isLoggedIn.value
                       ? Column(
                         children: [
                           ListTile(
                             leading: CircleAvatar(
                               backgroundColor: Colors.cyan.shade100,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.person,
                                 color: Colors.cyan,
                               ),
                             ),
                             title: Text(
-                              controller.authController.userName.value,
+                              controller.authController.userName,
                             ),
                             subtitle: Text(
-                              controller.authController.userEmail.value,
+                              controller.authController.userEmail,
                             ),
                             trailing: const Icon(
                               Icons.check_circle,
@@ -153,6 +154,33 @@ class SettingsView extends GetView<SettingsController> {
 
           const SizedBox(height: 16),
 
+          // Sección Administración (solo para admins)
+          Obx(() {
+            if (controller.authController.isLoggedIn.value &&
+                controller.authController.currentUser.value?.role == UserRole.admin) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader('Administración'),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Panel de Administración'),
+                      subtitle: const Text('Gestionar usuarios y configuraciones'),
+                      leading: const Icon(
+                        Icons.admin_panel_settings,
+                        color: Colors.orange,
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios),
+                      onTap: () => Get.toNamed('/admin-panel'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          }),
+
           // Sección Sobre la app
           _buildSectionHeader('Información'),
           Card(
@@ -232,15 +260,21 @@ class SettingsView extends GetView<SettingsController> {
           children:
               controller.languages.map((language) {
                 return Obx(
-                  () => RadioListTile<String>(
+                  () => ListTile(
                     title: Text(language),
-                    value: language,
-                    groupValue: controller.selectedLanguage.value,
-                    onChanged: (value) {
-                      if (value != null) {
-                        controller.changeLanguage(value);
-                        Get.back();
-                      }
+                    leading: Radio<String>(
+                      value: language,
+                      groupValue: controller.selectedLanguage.value,
+                      onChanged: (value) {
+                        if (value != null) {
+                          controller.changeLanguage(value);
+                          Get.back();
+                        }
+                      },
+                    ),
+                    onTap: () {
+                      controller.changeLanguage(language);
+                      Get.back();
                     },
                   ),
                 );
